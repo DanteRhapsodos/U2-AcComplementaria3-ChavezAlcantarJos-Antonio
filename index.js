@@ -11,6 +11,16 @@ db.run(`CREATE TABLE IF NOT EXISTS todos (
 
 const app = new Hono()
 
+const insertarTodo = (todo) => {
+    const stmt = db.prepare('INSERT INTO todos (todo) VALUES (?)')
+    const result = stmt.run(todo)
+
+    return {
+        id: Number(result.lastInsertRowid),
+        message: 'Insert was successful'
+    }
+}
+
 app.get('/', (c) => {
     return c.json({ status: 'ok' })
 })
@@ -42,6 +52,34 @@ app.post('/insert', async (c) => {
     }
 })
 
+app.post('/agrega_todo', async (c) => {
+    let body
+
+    try {
+        body = await c.req.json()
+    } catch {
+        return c.json({ error: 'Falta información' }, 400)
+    }
+
+    const { todo } = body
+
+    if (!todo) {
+        return c.json({ error: 'Falta información' }, 400)
+    }
+
+    try {
+        const stmt = db.prepare('INSERT INTO todos (todo) VALUES (?)')
+        const result = stmt.run(todo)
+
+        return c.json({
+            mensaje: 'Todo guardado correctamente',
+            id: Number(result.lastInsertRowid)
+        }, 201)
+
+    } catch (err) {
+        return c.json({ error: err.message }, 500)
+    }
+})
 export { app, db }
 
 export default {
