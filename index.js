@@ -86,3 +86,14 @@ export default {
     port: process.env.PORT || 3000,
     fetch: app.fetch,
 }
+
+app.get('/todos', (c) => {
+    try {
+        const stmt = db.prepare('SELECT * FROM todos ORDER BY id DESC')
+        const todos = stmt.all()
+
+        return c.json(todos, 200)
+    } catch (err) {
+        return c.json({ error: err.message }, 500)
+    }
+})
