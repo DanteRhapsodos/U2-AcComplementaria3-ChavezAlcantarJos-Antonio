@@ -1,7 +1,6 @@
 import { Hono } from 'hono'
 import { Database } from 'bun:sqlite'
 
-// Abre la base de datos
 const db = new Database('./base.sqlite3')
 db.run(`CREATE TABLE IF NOT EXISTS todos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -10,16 +9,6 @@ db.run(`CREATE TABLE IF NOT EXISTS todos (
 )`)
 
 const app = new Hono()
-
-const insertarTodo = (todo) => {
-    const stmt = db.prepare('INSERT INTO todos (todo) VALUES (?)')
-    const result = stmt.run(todo)
-
-    return {
-        id: Number(result.lastInsertRowid),
-        message: 'Insert was successful'
-    }
-}
 
 app.get('/', (c) => {
     return c.json({ status: 'ok' })
@@ -55,45 +44,35 @@ app.post('/insert', async (c) => {
 app.post('/agrega_todo', async (c) => {
     try {
         const body = await c.req.json()
-
         const { todo } = body
-
         if (!todo) {
             return c.json({ error: 'Falta información' }, 400)
         }
-
         const stmt = db.prepare('INSERT INTO todos (todo) VALUES (?)')
         const result = stmt.run(todo)
-
         return c.json({
             mensaje: 'Todo guardado correctamente',
             id: Number(result.lastInsertRowid)
         }, 201)
-
     } catch (err) {
         return c.json({ error: err.message || 'Error en el servidor' }, 500)
     }
 })
+
+app.get('/todos', (c) => {
+    try {
+        const stmt = db.prepare('SELECT * FROM todos ORDER BY id DESC')
+        const todos = stmt.all()
+        return c.json(todos, 200)
+    } catch (err) {
+        return c.json({ error: err.message }, 500)
+    }
+})
+
 export { app, db }
-
-app.get('/', (c) => c.json({ status: 'ok' }))
-
-app.post('/agrega_todo', async (c) => { ... })
-
-app.get('/todos', (c) => { ... })
 
 export default {
     port: process.env.PORT || 3000,
     fetch: app.fetch,
 }
 
-app.get('/todos', (c) => {
-    try {
-        const stmt = db.prepare('SELECT * FROM todos ORDER BY id DESC')
-        const todos = stmt.all()
-
-        return c.json(todos, 200)
-    } catch (err) {
-        return c.json({ error: err.message }, 500)
-    }
-})
