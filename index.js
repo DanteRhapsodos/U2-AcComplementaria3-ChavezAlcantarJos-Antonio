@@ -76,6 +76,12 @@ app.post('/agrega_todo', async (c) => {
 })
 export { app, db }
 
+app.get('/', (c) => c.json({ status: 'ok' }))
+
+app.post('/agrega_todo', async (c) => { ... })
+
+app.get('/todos', (c) => { ... })
+
 export default {
     port: process.env.PORT || 3000,
     fetch: app.fetch,
