@@ -53,21 +53,15 @@ app.post('/insert', async (c) => {
 })
 
 app.post('/agrega_todo', async (c) => {
-    let body
-
     try {
-        body = await c.req.json()
-    } catch {
-        return c.json({ error: 'Falta información' }, 400)
-    }
+        const body = await c.req.json()
 
-    const { todo } = body
+        const { todo } = body
 
-    if (!todo) {
-        return c.json({ error: 'Falta información' }, 400)
-    }
+        if (!todo) {
+            return c.json({ error: 'Falta información' }, 400)
+        }
 
-    try {
         const stmt = db.prepare('INSERT INTO todos (todo) VALUES (?)')
         const result = stmt.run(todo)
 
@@ -77,7 +71,7 @@ app.post('/agrega_todo', async (c) => {
         }, 201)
 
     } catch (err) {
-        return c.json({ error: err.message }, 500)
+        return c.json({ error: err.message || 'Error en el servidor' }, 500)
     }
 })
 export { app, db }
