@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: actividad-render
+    runtime: node
+    buildCommand: npm install -g bun && bun install
+    startCommand: bun index.js
